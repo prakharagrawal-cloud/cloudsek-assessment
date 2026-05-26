@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudSEK · Candidate Assessment</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: #f7f5f0; color: #1a1a1a; min-height: 100vh; }
+  .app { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .brand { text-align: center; margin-bottom: 3rem; padding-top: 1rem; }
+  .brand-eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; font-family: Arial, sans-serif; margin-bottom: 0.5rem; }
+  .brand-title { font-size: 28px; font-weight: 400; color: #1a1a1a; letter-spacing: -0.5px; }
+
+  .progress-bar-wrap { background: #e8e4dc; border-radius: 99px; height: 4px; margin-bottom: 2.5rem; }
+  .progress-bar-fill { background: #2d5a27; height: 4px; border-radius: 99px; transition: width 0.4s ease; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .card { background: white; border-radius: 16px; padding: 2.5rem; border: 1px solid #e8e4dc; }
+  .card h2 { font-size: 22px; font-weight: 400; margin-bottom: 0.75rem; }
+  .card p { font-size: 15px; color: #555; line-height: 1.7; margin-bottom: 1.25rem; font-family: Arial, sans-serif; }
+  .card p:last-of-type { margin-bottom: 1.75rem; }
+
+  .field-group { margin-bottom: 1.25rem; }
+  .field-group label { display: block; font-size: 12px; color: #888; font-family: Arial, sans-serif; margin-bottom: 0.4rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .field-group input { width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; font-family: Arial, sans-serif; background: #fafaf8; outline: none; transition: border-color 0.2s; }
+  .field-group input:focus { border-color: #2d5a27; background: white; }
+
+  .btn-primary { width: 100%; padding: 14px; background: #1a1a1a; color: white; border: none; border-radius: 10px; font-size: 15px; font-family: Arial, sans-serif; cursor: pointer; letter-spacing: 0.03em; transition: background 0.2s; margin-top: 0.5rem; }
+  .btn-primary:hover { background: #2d5a27; }
+
+  /* Trap question styles */
+
+
+  /* Questions */
+  .q-meta { font-size: 12px; color: #bbb; font-family: Arial, sans-serif; margin-bottom: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .q-text { font-size: 20px; line-height: 1.55; font-weight: 400; color: #1a1a1a; margin-bottom: 2rem; min-height: 70px; }
+  .options-grid { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn { background: white; border: 1px solid #e0dbd0; border-radius: 12px; padding: 14px 18px; font-size: 14px; font-family: Arial, sans-serif; color: #333; cursor: pointer; text-align: left; transition: all 0.15s; line-height: 1.5; }
+  .option-btn:hover { border-color: #2d5a27; background: #f4faf3; }
+  .option-btn.selected { border-color: #2d5a27; background: #f4faf3; color: #1a4a18; font-weight: 500; }
+
+  /* Timed question overlay */
+  .timed-banner { background: #fffbf0; border: 1px solid #f0d080; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-family: Arial, sans-serif; color: #7a5c00; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+  .timer-val { font-weight: 600; font-size: 15px; }
+  .timer-val.urgent { color: #c0392b; }
+
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; min-height: 44px; }
+  .btn-back { background: none; border: 1px solid #ddd; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-family: Arial, sans-serif; color: #888; cursor: pointer; transition: all 0.2s; }
+  .btn-back:hover { border-color: #aaa; color: #333; }
+  .btn-next { background: #1a1a1a; border: none; border-radius: 8px; padding: 10px 24px; font-size: 14px; font-family: Arial, sans-serif; color: white; cursor: pointer; transition: background 0.2s; }
+  .btn-next:hover { background: #2d5a27; }
+  .btn-next.hidden { display: none; }
+  .q-counter { font-size: 13px; color: #bbb; font-family: Arial, sans-serif; }
+
+  /* Loading */
+  .loading-screen { text-align: center; padding: 5rem 1rem; }
+  .spinner { width: 36px; height: 36px; border: 3px solid #e8e4dc; border-top-color: #2d5a27; border-radius: 50%; margin: 0 auto 1.5rem; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-title { font-size: 18px; margin-bottom: 0.5rem; }
+  .loading-sub { font-size: 13px; color: #aaa; font-family: Arial, sans-serif; }
+
+  /* Results */
+  .result-hero { background: #1a1a1a; color: white; border-radius: 16px; padding: 2.5rem; text-align: center; margin-bottom: 1.5rem; }
+  .result-profile-initial { font-size: 48px; font-weight: 400; margin-bottom: 0.35rem; letter-spacing: 2px; }
+  .result-profile-label { font-size: 17px; color: #aaa; font-family: Arial, sans-serif; margin-bottom: 0.2rem; }
+  .result-candidate { font-size: 12px; color: #555; font-family: Arial, sans-serif; margin-top: 0.5rem; }
+
+  .dimensions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  .dim-card { background: white; border: 1px solid #e8e4dc; border-radius: 12px; padding: 1.25rem; }
+  .dim-label { font-size: 11px; color: #bbb; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+  .dim-result { font-size: 17px; font-weight: 500; color: #1a4a18; margin-bottom: 0.5rem; font-family: Arial, sans-serif; }
+  .dim-bar-wrap { background: #f0ede6; height: 5px; border-radius: 99px; }
+  .dim-bar-fill { height: 5px; border-radius: 99px; background: #2d5a27; }
+  .dim-pct { font-size: 12px; color: #bbb; font-family: Arial, sans-serif; margin-top: 0.35rem; }
+
+  .analysis-card { background: white; border: 1px solid #e8e4dc; border-radius: 16px; padding: 2rem; margin-bottom: 1.25rem; }
+  .analysis-card h3 { font-size: 13px; font-weight: 400; color: #aaa; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+  .analysis-text { font-size: 15px; color: #333; line-height: 1.85; font-family: Arial, sans-serif; }
+
+  .trait-list { list-style: none; }
+  .trait-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f5f2ed; font-size: 14px; font-family: Arial, sans-serif; color: #444; line-height: 1.55; }
+  .trait-item:last-child { border-bottom: none; }
+  .trait-dot { width: 7px; height: 7px; border-radius: 50%; background: #2d5a27; margin-top: 6px; flex-shrink: 0; }
+
+  .action-row { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .btn-outline { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; font-family: Arial, sans-serif; background: white; color: #555; cursor: pointer; transition: all 0.2s; }
+  .btn-outline:hover { border-color: #2d5a27; color: #2d5a27; }
+  .btn-dark { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-family: Arial, sans-serif; background: #1a1a1a; color: white; cursor: pointer; transition: background 0.2s; }
+  .btn-dark:hover { background: #2d5a27; }
+
+  /* Flagged screen */
+  .flagged-screen { text-align: center; padding: 3rem 1rem; }
+  .flag-icon { font-size: 40px; margin-bottom: 1.25rem; }
+  .flagged-screen h2 { font-size: 20px; font-weight: 400; margin-bottom: 0.75rem; }
+  .flagged-screen p { font-size: 14px; color: #777; font-family: Arial, sans-serif; line-height: 1.7; max-width: 400px; margin: 0 auto 2rem; }
+
+  @media (max-width: 500px) {
+    .dimensions-grid { grid-template-columns: 1fr; }
+    .q-text { font-size: 17px; }
+    .app { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="brand">
+    <div class="brand-eyebrow">CloudSEK Hiring</div>
+    <div class="brand-title">Candidate Assessment</div>
+  </div>
+
+  <!-- Screen: Intro -->
+  <div class="screen active" id="screen-intro">
+    <div class="card">
+      <h2>Welcome</h2>
+      <p>This short assessment is part of our screening process and helps us understand how you naturally think, work, and make decisions.</p>
+      <p>Please answer each question based on your honest, first instinct — there are no right or wrong answers. The assessment takes approximately 10–12 minutes.</p>
+
+      <div class="field-group">
+        <label>Full Name</label>
+        <input type="text" id="inp-name" placeholder="e.g. Priya Sharma" autocomplete="name" />
+      </div>
+      <div class="field-group">
+        <label>Email Address</label>
+        <input type="email" id="inp-email" placeholder="e.g. priya@company.com" autocomplete="email" />
+      </div>
+
+      <!-- Honeypot: hidden field, bots fill it, humans won't see it -->
+      <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+        <input type="text" id="hp-field" tabindex="-1" autocomplete="off" placeholder="Leave this blank" />
+      </div>
+
+      <button class="btn-primary" onclick="startTest()">Begin Assessment →</button>
+    </div>
+  </div>
+
+  <!-- Screen: Questions -->
+  <div class="screen" id="screen-questions">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div id="timed-banner-wrap"></div>
+    <div class="q-meta" id="q-meta">Question 1 of 60</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="nav-row">
+      <button class="btn-back" id="btn-back" onclick="prevQ()">← Back</button>
+      <span class="q-counter" id="q-counter"></span>
+      <button class="btn-next hidden" id="btn-next" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+
+  <!-- Screen: Loading -->
+  <div class="screen" id="screen-loading">
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <div class="loading-title">Processing your responses</div>
+      <div class="loading-sub">This will take just a moment.</div>
+    </div>
+  </div>
+
+  <!-- Screen: Flagged (AI suspected) -->
+  <div class="screen" id="screen-flagged">
+    <div class="card flagged-screen">
+      <div class="flag-icon">⚑</div>
+      <h2>Assessment Incomplete</h2>
+      <p>We noticed some unusual response patterns in your submission. Please retake the assessment and answer based on your own natural instincts — no preparation or assistance is needed.</p>
+      <button class="btn-primary" onclick="retake()" style="max-width:240px;margin:0 auto;display:block;">Start Over</button>
+    </div>
+  </div>
+
+  <!-- Screen: Results -->
+  <div class="screen" id="screen-results">
+    <div class="card" style="text-align:center; padding: 3rem 2.5rem;">
+      <div style="font-size:40px; margin-bottom:1.25rem;">✓</div>
+      <h2 style="margin-bottom:0.75rem;">Thank you, <span id="res-firstname"></span>.</h2>
+      <p style="margin-bottom:0;">Your responses have been recorded. Our team will be in touch with next steps.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  // Randomised order — mixed dimensions
+  {dim:"EI",q:"At a social gathering, you typically…",opts:[{t:"Enjoy meeting new people and feel energised by it",v:"E"},{t:"Prefer deeper conversations with a few familiar people",v:"I"}]},
+  {dim:"SN",q:"When learning something new, you prefer…",opts:[{t:"Practical examples and step-by-step instructions",v:"S"},{t:"Understanding the big picture and underlying concepts",v:"N"}]},
+  {dim:"TF",q:"When making decisions, you primarily…",opts:[{t:"Apply logical analysis and objective criteria",v:"T"},{t:"Consider how the outcome affects the people involved",v:"F"}]},
+  {dim:"JP",q:"Your workspace is typically…",opts:[{t:"Organised — everything has a place",v:"J"},{t:"Flexible — organised in your own way",v:"P"}]},
+  {dim:"EI",q:"After a long week, you recharge by…",opts:[{t:"Going out with friends or being around people",v:"E"},{t:"Spending quiet time alone",v:"I"}]},
+  {dim:"SN",q:"You trust more in…",opts:[{t:"Direct experience and proven methods",v:"S"},{t:"Intuition and theoretical possibilities",v:"N"}]},
+  {dim:"TF",q:"Someone shares a difficult problem with you — you…",opts:[{t:"Offer solutions and a clear-headed perspective",v:"T"},{t:"Listen carefully and focus on how they're feeling",v:"F"}]},
+  {dim:"JP",q:"Deadlines feel…",opts:[{t:"Like useful structure — you aim to be done early",v:"J"},{t:"Like pressure that brings out your best work",v:"P"}]},
+  {dim:"EI",q:"When working through a problem, you prefer to…",opts:[{t:"Think out loud and discuss with others",v:"E"},{t:"Work it through in your head before sharing",v:"I"}]},
+  {dim:"SN",q:"You are more drawn to…",opts:[{t:"Concrete facts and specific details",v:"S"},{t:"Patterns, ideas, and future possibilities",v:"N"}]},
+  {dim:"TF",q:"In a disagreement, you…",opts:[{t:"Focus on the facts and logical merit of each side",v:"T"},{t:"Seek harmony and consider everyone's feelings",v:"F"}]},
+  {dim:"JP",q:"On holiday, you…",opts:[{t:"Research and plan the itinerary well in advance",v:"J"},{t:"Go with the flow and decide things as you go",v:"P"}]},
+  {dim:"EI",q:"In meetings, you tend to…",opts:[{t:"Share your thoughts readily and enjoy the debate",v:"E"},{t:"Listen carefully and contribute when you have something clear to say",v:"I"}]},
+  {dim:"SN",q:"In conversation, you prefer discussing…",opts:[{t:"Real events, practical matters, what's actually happening",v:"S"},{t:"Ideas, theories, and what could be",v:"N"}]},
+  {dim:"TF",q:"You find it easier to…",opts:[{t:"Give direct, critical feedback when it's needed",v:"T"},{t:"Make people feel genuinely valued",v:"F"}]},
+  {dim:"JP",q:"With tasks, you like to…",opts:[{t:"Finish one thing fully before moving to the next",v:"J"},{t:"Work on several things at once",v:"P"}]},
+  {dim:"EI",q:"You tend to have…",opts:[{t:"A wide circle of acquaintances and contacts",v:"E"},{t:"A small, close-knit group of trusted people",v:"I"}]},
+  {dim:"SN",q:"Your approach to a new project is to…",opts:[{t:"Start with clear milestones and deliverables",v:"S"},{t:"Explore the concept broadly before narrowing it down",v:"N"}]},
+  {dim:"TF",q:"A fair decision is one that…",opts:[{t:"Is logically sound and based on consistent principles",v:"T"},{t:"Carefully considers the needs of everyone involved",v:"F"}]},
+  {dim:"JP",q:"Unresolved issues make you feel…",opts:[{t:"Uncomfortable — you prefer to close things off",v:"J"},{t:"Curious — you enjoy exploring all sides first",v:"P"}]},
+  {dim:"EI",q:"When stressed, you…",opts:[{t:"Seek people out to talk things through",v:"E"},{t:"Need time alone to process and recover",v:"I"}]},
+  {dim:"SN",q:"You are more likely to be described as…",opts:[{t:"Realistic, grounded, and detail-oriented",v:"S"},{t:"Imaginative, innovative, and idea-driven",v:"N"}]},
+  {dim:"TF",q:"You feel more comfortable with…",opts:[{t:"Objective truth, even when it's uncomfortable",v:"T"},{t:"Preserving positive relationships and harmony",v:"F"}]},
+  {dim:"JP",q:"You prefer to…",opts:[{t:"Know what to expect and plan well ahead",v:"J"},{t:"Keep your options open for as long as possible",v:"P"}]},
+  {dim:"EI",q:"In a new environment, you…",opts:[{t:"Quickly introduce yourself and start exploring",v:"E"},{t:"Observe carefully before engaging",v:"I"}]},
+  {dim:"SN",q:"When remembering events, you tend to…",opts:[{t:"Recall specific details — what was said, who was there",v:"S"},{t:"Remember the overall impression and feeling",v:"N"}]},
+  {dim:"TF",q:"When evaluating an idea, you first ask…",opts:[{t:"Does it make logical sense? Is it efficient?",v:"T"},{t:"How will this affect the people involved?",v:"F"}]},
+  {dim:"JP",q:"After completing a task, you feel…",opts:[{t:"Satisfied — you like closing things off",v:"J"},{t:"Immediately ready to explore what comes next",v:"P"}]},
+  {dim:"EI",q:"Group projects generally feel…",opts:[{t:"Energising — you enjoy the collaboration",v:"E"},{t:"Draining — you prefer working independently",v:"I"}]},
+  {dim:"SN",q:"You focus more on…",opts:[{t:"What is actually happening right now",v:"S"},{t:"What could happen in the future",v:"N"}]},
+  {dim:"TF",q:"You tend to…",opts:[{t:"Step back emotionally to analyse situations clearly",v:"T"},{t:"Let your personal values shape your thinking",v:"F"}]},
+  {dim:"JP",q:"When rules change unexpectedly, you feel…",opts:[{t:"Frustrated — you prefer stability and predictability",v:"J"},{t:"Adaptable — change keeps things interesting",v:"P"}]},
+  {dim:"EI",q:"You are most productive when…",opts:[{t:"There is energy and activity around you",v:"E"},{t:"In a quiet, uninterrupted environment",v:"I"}]},
+  {dim:"SN",q:"In presentations, you prefer…",opts:[{t:"Data, specifics, and concrete evidence",v:"S"},{t:"Concepts, narratives, and possibilities",v:"N"}]},
+  {dim:"TF",q:"In a team, you contribute most by…",opts:[{t:"Identifying flaws and sharpening the logic",v:"T"},{t:"Building morale and ensuring everyone feels heard",v:"F"}]},
+  {dim:"JP",q:"You tend to make decisions…",opts:[{t:"Promptly — you dislike leaving things unresolved",v:"J"},{t:"After gathering as much information as possible",v:"P"}]},
+  {dim:"EI",q:"Phone calls vs messages — you prefer…",opts:[{t:"Calling — you prefer real-time conversation",v:"E"},{t:"Messaging — you like to compose your thoughts first",v:"I"}]},
+  {dim:"SN",q:"When making a decision, you rely more on…",opts:[{t:"What has worked in the past",v:"S"},{t:"New approaches or fresh insights",v:"N"}]},
+  {dim:"TF",q:"Receiving critical feedback, you typically…",opts:[{t:"Separate it from emotion and act on it directly",v:"T"},{t:"Feel it personally, even if you know it's useful",v:"F"}]},
+  {dim:"JP",q:"Your to-do list is…",opts:[{t:"Carefully maintained and prioritised",v:"J"},{t:"Loosely tracked or mostly in your head",v:"P"}]},
+  {dim:"EI",q:"Your energy level after a long social event is typically…",opts:[{t:"Higher — socialising invigorates you",v:"E"},{t:"Lower — you need recovery time afterwards",v:"I"}]},
+  {dim:"SN",q:"You tend to notice…",opts:[{t:"Specific details others overlook in the environment",v:"S"},{t:"Connections between ideas others don't see",v:"N"}]},
+  {dim:"TF",q:"When rules conflict with compassion, you tend to…",opts:[{t:"Uphold the rule for the sake of consistency",v:"T"},{t:"Make an exception based on the circumstances",v:"F"}]},
+  {dim:"JP",q:"In your work, structure provides…",opts:[{t:"Comfort and efficiency",v:"J"},{t:"Constraint — you prefer flexibility",v:"P"}]},
+  {dim:"EI",q:"When you have news to share, you…",opts:[{t:"Want to tell people about it immediately",v:"E"},{t:"Share it selectively with the people who matter",v:"I"}]},
+  {dim:"SN",q:"Your reading preference leans toward…",opts:[{t:"Non-fiction, practical guides, factual content",v:"S"},{t:"Fiction, philosophy, or speculative ideas",v:"N"}]},
+  {dim:"TF",q:"You are typically described as more…",opts:[{t:"Direct and task-focused",v:"T"},{t:"Warm and people-focused",v:"F"}]},
+  {dim:"JP",q:"You prefer to submit work…",opts:[{t:"Early, polished, and reviewed thoroughly",v:"J"},{t:"Right before the deadline, fully developed",v:"P"}]},
+  {dim:"EI",q:"You find it easier to…",opts:[{t:"Strike up a conversation with a stranger",v:"E"},{t:"Focus deeply for long stretches without interruption",v:"I"}]},
+  {dim:"SN",q:"The future feels like…",opts:[{t:"Something to plan for carefully and prepare against",v:"S"},{t:"An open space full of exciting possibilities",v:"N"}]},
+  {dim:"TF",q:"Your decisions are guided more by…",opts:[{t:"Objective reasoning and available data",v:"T"},{t:"Personal values and what genuinely feels right",v:"F"}]},
+  {dim:"JP",q:"Last-minute changes to your plans feel…",opts:[{t:"Stressful and disruptive to your flow",v:"J"},{t:"Fine — you adapt well",v:"P"}]},
+  {dim:"EI",q:"Others likely describe you as…",opts:[{t:"Outgoing, talkative, enthusiastic",v:"E"},{t:"Reserved, thoughtful, private",v:"I"}]},
+  {dim:"SN",q:"Reading instructions, you…",opts:[{t:"Follow them carefully, step by step",v:"S"},{t:"Skim them and figure it out as you go",v:"N"}]},
+  {dim:"TF",q:"You are more naturally…",opts:[{t:"Consistent — you apply the same standard to everyone",v:"T"},{t:"Adaptable — you weigh individual circumstances",v:"F"}]},
+  {dim:"JP",q:"Your calendar is typically…",opts:[{t:"Structured and scheduled well in advance",v:"J"},{t:"Flexible with room for spontaneous changes",v:"P"}]},
+  {dim:"EI",q:"When you have a decision to make, you…",opts:[{t:"Talk it through with others to gain perspective",v:"E"},{t:"Think it through alone before reaching out",v:"I"}]},
+  {dim:"SN",q:"You find it easier to work on…",opts:[{t:"Problems with clear, tangible solutions",v:"S"},{t:"Open-ended challenges that require creative thinking",v:"N"}]},
+  {dim:"TF",q:"A good argument is one that…",opts:[{t:"Is logically airtight and internally consistent",v:"T"},{t:"Resonates with people's values and lived experience",v:"F"}]},
+  {dim:"JP",q:"The way you approach a long-term goal is…",opts:[{t:"Break it into milestones and track your progress",v:"J"},{t:"Keep the goal in mind but stay flexible about how you get there",v:"P"}]},
+];
+
+// Timed questions: indices that should be time-limited (spot checks)
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyDeuntllpSa8BIkfyb5gn0ClaKM915LchxPXxXYsOIPdsCWFm7HecCyoxwYAUmrAcn-w/exec";
+  const TIMED_INDICES = [9, 24, 39, 54];
+const TIMED_SECONDS = 18;
+
+const TYPE_NAMES = {
+  INTJ:"Architect",INTP:"Analyst",ENTJ:"Commander",ENTP:"Debater",
+  INFJ:"Advocate",INFP:"Mediator",ENFJ:"Protagonist",ENFP:"Campaigner",
+  ISTJ:"Logistician",ISFJ:"Defender",ESTJ:"Executive",ESFJ:"Consul",
+  ISTP:"Virtuoso",ISFP:"Adventurer",ESTP:"Entrepreneur",ESFP:"Entertainer"
+};
+
+let currentQ = 0, answers = {}, userName = '', userEmail = '';
+let timerInterval = null, timedOutCount = 0;
+let questionStartTimes = {}, avgResponseMs = [];
+let suspicionScore = 0;
+
+function startTest() {
+  // Honeypot check
+  if (document.getElementById('hp-field').value !== '') {
+    showScreen('screen-flagged');
+    return;
+  }
+  userName = document.getElementById('inp-name').value.trim();
+  userEmail = document.getElementById('inp-email').value.trim();
+
+  if (!userName || !userEmail) { alert('Please enter your name and email.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) { alert('Please enter a valid email address.'); return; }
+
+  showScreen('screen-questions');
+  renderQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+let timerEl = null;
+
+function renderQuestion() {
+  clearTimer();
+  const q = QUESTIONS[currentQ];
+  questionStartTimes[currentQ] = Date.now();
+
+  document.getElementById('q-meta').textContent = `${currentQ + 1} of ${QUESTIONS.length}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-counter').textContent = `${currentQ + 1} / ${QUESTIONS.length}`;
+  document.getElementById('progress-fill').style.width = `${(currentQ / QUESTIONS.length) * 100}%`;
+
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  q.opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (answers[currentQ] === opt.v ? ' selected' : '');
+    btn.textContent = opt.t;
+    btn.onclick = () => selectAnswer(opt.v);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('btn-back').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+
+  // Show "Next" only if this question was already answered (user came back via Back)
+  // On the last question, always show Submit once answered
+  const nextBtn = document.getElementById('btn-next');
+  const alreadyAnswered = answers[currentQ] !== undefined;
+  if (currentQ === QUESTIONS.length - 1) {
+    nextBtn.textContent = 'Submit';
+    nextBtn.classList.toggle('hidden', !alreadyAnswered);
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.classList.toggle('hidden', !alreadyAnswered);
+  }
+
+  // Timed question
+  const bannerWrap = document.getElementById('timed-banner-wrap');
+  if (TIMED_INDICES.includes(currentQ)) {
+    let remaining = TIMED_SECONDS;
+    bannerWrap.innerHTML = `<div class="timed-banner"><span>Answer within</span><span class="timer-val" id="timer-val">${remaining}s</span></div>`;
+    timerEl = document.getElementById('timer-val');
+    timerInterval = setInterval(() => {
+      remaining--;
+      if (timerEl) {
+        timerEl.textContent = remaining + 's';
+        if (remaining <= 6) timerEl.classList.add('urgent');
+      }
+      if (remaining <= 0) {
+        clearTimer();
+        timedOutCount++;
+        // Auto-advance if no answer
+        if (answers[currentQ] === undefined) {
+          answers[currentQ] = '__timeout__';
+        }
+        nextQ();
+      }
+    }, 1000);
+  } else {
+    bannerWrap.innerHTML = '';
+  }
+}
+
+function clearTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function selectAnswer(val) {
+  const elapsed = Date.now() - (questionStartTimes[currentQ] || Date.now());
+  const wasAnswered = answers[currentQ] !== undefined;
+  answers[currentQ] = val;
+  avgResponseMs.push(elapsed);
+
+  document.querySelectorAll('.option-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', QUESTIONS[currentQ].opts[i].v === val);
+  });
+
+  // Last question: show Submit instead of auto-advancing
+  if (currentQ === QUESTIONS.length - 1) {
+    const nextBtn = document.getElementById('btn-next');
+    nextBtn.textContent = 'Submit';
+    nextBtn.classList.remove('hidden');
+    return;
+  }
+
+  // If user came back to change an answer, show Next instead of jumping
+  if (wasAnswered) {
+    const nextBtn = document.getElementById('btn-next');
+    nextBtn.textContent = 'Next →';
+    nextBtn.classList.remove('hidden');
+    return;
+  }
+
+  // Auto-advance after a brief delay so the selection is visible
+  setTimeout(() => {
+    currentQ++;
+    renderQuestion();
+  }, 300);
+}
+
+function nextQ() {
+  if (answers[currentQ] === undefined) return;
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    submitTest();
+  }
+}
+
+function prevQ() {
+  if (currentQ > 0) { clearTimer(); currentQ--; renderQuestion(); }
+}
+
+function checkSuspicion() {
+  // Called only at submit.
+  // avgResponseMs only contains times for questions the user *clicked* — not timeouts.
+  // We only run timing checks if we have enough data points from real clicks.
+  if (avgResponseMs.length >= 20) {
+    const sorted = [...avgResponseMs].sort((a,b)=>a-b);
+    const median = sorted[Math.floor(sorted.length/2)];
+    // Under 1.8s median across 20+ questions: unrealistically fast
+    if (median < 1800) suspicionScore += 3;
+  }
+  if (avgResponseMs.length > 0) {
+    const avg = avgResponseMs.reduce((a,b)=>a+b,0)/avgResponseMs.length;
+    // Under 2.5s average: extremely fast for reading + deciding (not just scrolling)
+    if (avg < 2500) suspicionScore += 2;
+  }
+  // Timed out on 2+ spot checks — not engaged or using automation
+  if (timedOutCount >= 2) suspicionScore += 2;
+  // Answered fewer than 30 questions with timed responses (rest were timeouts)
+  // This catches bots that let the timer run out on most questions
+  const realAnswers = Object.values(answers).filter(v => v !== '__timeout__').length;
+  if (realAnswers < 30) suspicionScore += 3;
+}
+
+function calcScores() {
+  const s = {E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+  Object.values(answers).forEach(v => { if (v !== '__timeout__') s[v]++; });
+  return s;
+}
+
+async function submitTest() {
+  clearTimer();
+
+  // Guard: ensure all questions answered (timeouts count)
+  const unanswered = QUESTIONS.map((_,i) => i).filter(i => answers[i] === undefined);
+  if (unanswered.length > 0) {
+    currentQ = unanswered[0];
+    renderQuestion();
+    return;
+  }
+
+  checkSuspicion();
+  if (suspicionScore >= 5) {
+    showScreen('screen-flagged');
+    return;
+  }
+
+  showScreen('screen-loading');
+  const scores = calcScores();
+  const type = (scores.E>=scores.I?'E':'I')+(scores.S>=scores.N?'S':'N')+(scores.T>=scores.F?'T':'F')+(scores.J>=scores.P?'J':'P');
+
+  const answerSummary = QUESTIONS.map((q,i)=>{
+    const chosen = q.opts.find(o=>o.v===answers[i]);
+    return `Q${i+1} [${q.dim}]: "${q.q}" → "${chosen?chosen.t:(answers[i]==='__timeout__'?'[timed out]':'N/A')}"`;
+  }).join('\n');
+
+  const TYPE_PROFILES = {
+    INTJ: {
+      label: "Architect",
+      core: "Highly strategic, independently-minded, and driven by long-term vision. Processes information internally before acting, often appearing reserved or blunt. Confident in their own frameworks to the point of stubbornness.",
+      workplace: "Works best with autonomy, clear objectives, and intellectual challenges. Dislikes micromanagement, repetitive tasks, and what they perceive as inefficiency. Will push back on decisions they disagree with — directly and persistently.",
+      blindspots: "Can alienate teammates through bluntness or perceived arrogance. Struggles when their model is wrong but won't admit it. May dismiss emotional or interpersonal concerns as irrelevant. Weak scores here signal someone who could become a lone wolf or a bottleneck.",
+      cloudSEKfit: "Strong fit for technical, analytical, or strategy roles. Watch for inability to collaborate on cross-functional teams or take direction from managers they don't respect."
+    },
+    INTP: {
+      label: "Analyst",
+      core: "Driven by intellectual curiosity and internal logic. Builds elaborate mental models and loves dissecting systems. Deeply independent thinker who distrusts authority unless it's earned through competence.",
+      workplace: "Thrives with complex, open-ended problems and latitude to explore. Hates busywork, repetition, and being forced to commit before they feel ready. Often underestimates time and resists deadlines.",
+      blindspots: "Execution gap: brilliant at ideation, weak at follow-through. Can disappear into a problem and go radio-silent. Socially awkward under pressure. May over-engineer solutions. Struggles with ambiguity in interpersonal dynamics.",
+      cloudSEKfit: "Good for research, threat analysis, or engineering roles. Red flag if they show strong avoidance of accountability, unclear communication, or inability to ship under pressure."
+    },
+    ENTJ: {
+      label: "Commander",
+      core: "Natural leader — decisive, direct, and wired to take charge. Sets high standards for themselves and others. Strategic thinker with strong execution drive. Doesn't wait for permission.",
+      workplace: "Performs best in roles with scope to lead, challenge the status quo, and drive measurable outcomes. Gets frustrated in slow-moving, bureaucratic environments. May steamroll quieter teammates.",
+      blindspots: "Impatience with people who don't match their pace. Can be dismissive of emotional or interpersonal concerns. May create a culture of fear in team settings. Doesn't always know when to listen.",
+      cloudSEKfit: "High potential in leadership, BD, or ops roles. Watch for inability to collaborate, delegate, or receive critical feedback. Strong ENTJs in junior roles sometimes struggle with authority above them."
+    },
+    ENTP: {
+      label: "Debater",
+      core: "Quick-thinking, contrarian by nature, and energised by ideas. Loves finding flaws in reasoning — including their own. Thrives in brainstorming, strategy, and situations with no clear rulebook.",
+      workplace: "Needs intellectual stimulation and variety. Loses energy on repetitive work fast. Will debate and push back as a default — it's how they think, not necessarily a sign of obstruction.",
+      blindspots: "Notoriously inconsistent follow-through. Can start 10 things and finish 3. May argue for the sake of it. Struggles with routine, process adherence, and detail work. Can be exhausting for teammates who want closure.",
+      cloudSEKfit: "Strong in product, GTM, or customer-facing technical roles. Red flag if they show pattern of abandoning projects, resistance to process, or inability to close without external pressure."
+    },
+    INFJ: {
+      label: "Advocate",
+      core: "Deeply values-driven, quietly strategic, and unusually perceptive about people. Long-term thinkers who invest heavily in meaning and impact. Private about inner life but highly principled.",
+      workplace: "Works best when the work aligns with their values and they feel trusted. Productive in environments with low interpersonal conflict. Deeply loyal when they feel respected.",
+      blindspots: "Conflict aversion can become problematic — they may absorb dysfunction silently for too long before burning out. Overloads themselves trying to meet everyone's needs. Sensitive to criticism even when they don't show it. Can become paralysed by perfectionism.",
+      cloudSEKfit: "Good fit for research, content, operations, or customer success. Watch for signs of extreme conflict avoidance, inability to deliver hard feedback, or misalignment with CloudSEK's pace and ambiguity."
+    },
+    INFP: {
+      label: "Mediator",
+      core: "Values-driven idealist with a rich inner world. Cares deeply about authenticity and meaning. Strong creative instinct. Fiercely independent thinker who resists being moulded.",
+      workplace: "Needs work that feels meaningful. Dislikes rigid structure, micromanagement, and environments they perceive as inauthentic. Works best with autonomy and a cause they believe in.",
+      blindspots: "Can struggle significantly with pace, pressure, and hard pragmatic decisions. Avoids conflict to the point of dysfunction. May prioritise personal values over business outcomes. Can be emotionally reactive to criticism. Needs significant alignment to thrive.",
+      cloudSEKfit: "Conditional fit — strong in values-aligned creative or research roles, weaker in high-stakes, fast-moving, or highly collaborative ones. High risk of poor fit in sales, ops, or leadership tracks."
+    },
+    ENFJ: {
+      label: "Protagonist",
+      core: "People-first leader who builds trust and loyalty instinctively. Highly attuned to group dynamics. Natural coach. Brings teams together and holds them together under pressure.",
+      workplace: "Performs best when they can lead, develop, and connect. Energised by collaborative environments. Highly dependable and proactive about communication.",
+      blindspots: "Can over-personalise professional situations. Takes on too much to avoid letting others down. May avoid necessary confrontation to preserve harmony. Approval-seeking patterns can undermine objectivity.",
+      cloudSEKfit: "Strong in team leads, customer success, or people-facing roles. Watch for inability to deliver hard decisions, overpromising to stakeholders, or burnout from overcommitment."
+    },
+    ENFP: {
+      label: "Campaigner",
+      core: "High-energy, ideas-first, people-oriented. Sees possibility everywhere. Brings enthusiasm and creativity that's genuinely contagious. Connects disparate concepts and people with ease.",
+      workplace: "Thrives in varied, creative, social environments. Needs work that evolves — gets bored fast. Excellent at starting things, weaker at seeing them through.",
+      blindspots: "Follow-through issues are the defining risk. Can overpromise, underdeliver, and move on. May struggle with structured work, detail, and sustained accountability. Emotional reactivity under pressure.",
+      cloudSEKfit: "Good fit for BD, marketing, or community roles. Red flag if they show consistent avoidance of detail work, inability to commit, or pattern of enthusiasm without execution."
+    },
+    ISTJ: {
+      label: "Logistician",
+      core: "Methodical, reliable, and deeply committed to doing things right. Lives by systems, standards, and follow-through. Doesn't make promises they can't keep.",
+      workplace: "Works best in structured environments with clear processes and measurable expectations. Highly accountable. Does not like surprises or moving goalposts.",
+      blindspots: "Resistance to change can be significant — may push back hard on new processes even when the old ones are clearly broken. Can be rigid, risk-averse, and slow to adapt. May struggle to improvise or take initiative outside defined scope.",
+      cloudSEKfit: "Strong in operations, compliance, engineering, or any role requiring reliability and precision. Watch for inability to handle ambiguity, slow adaptation to change, or friction in fast-moving team contexts."
+    },
+    ISFJ: {
+      label: "Defender",
+      core: "Warm, conscientious, and deeply loyal. Takes pride in being dependable. Highly attuned to others' needs and quietly dedicated to supporting the team.",
+      workplace: "Thrives in stable, supportive environments where their contributions are recognised. Avoids conflict instinctively. Highly thorough and process-oriented.",
+      blindspots: "Conflict avoidance is the dominant risk — may silently absorb dysfunction rather than raise issues. Overly self-sacrificing; says yes when they should say no. Resistant to change. Can understate their own needs until they burn out.",
+      cloudSEKfit: "Good fit for support, ops, or execution roles. Risk in fast-growth, ambiguous environments or roles that require asserting difficult positions. Watch for strong people-pleasing patterns."
+    },
+    ESTJ: {
+      label: "Executive",
+      core: "Decisive, structured, and holds themselves and others to high standards. Runs tight ships. Clear communicator with strong accountability instincts.",
+      workplace: "Performs best with clear authority, defined deliverables, and the ability to enforce standards. Gets frustrated by ambiguity, slack, or lack of accountability in others.",
+      blindspots: "Rigidity is the main risk. May enforce rules over sense. Can come across as blunt to the point of being demoralising. Struggles to accommodate nuance, exceptions, or emotionally complex situations. Not always good at listening.",
+      cloudSEKfit: "Strong in ops, team management, or process-heavy roles. Watch for inflexibility, poor upward feedback receptiveness, or inability to work with less structured colleagues."
+    },
+    ESFJ: {
+      label: "Consul",
+      core: "Warm, organised, and highly attuned to people. Keeps teams cohesive and morale high. Takes their responsibilities seriously and follows through.",
+      workplace: "Works best in harmonious, structured teams where their contributions are appreciated. Highly cooperative and reliable. Strong communicator.",
+      blindspots: "Approval-seeking is the defining risk. May change position based on social pressure rather than reasoning. Avoids necessary conflict. Sensitive to criticism. Can be overly focused on consensus at the expense of correct outcomes.",
+      cloudSEKfit: "Good in customer-facing, coordination, or team support roles. Red flag if they show inability to push back, strong people-pleasing, or defensiveness to critique in professional contexts."
+    },
+    ISTP: {
+      label: "Virtuoso",
+      core: "Analytical, action-oriented, and excellent under pressure. Cuts through complexity with pragmatic problem-solving. Calm when others panic. Independent by default.",
+      workplace: "Works best with tangible problems, clear ownership, and minimal micromanagement. Gets into flow on technical or mechanical challenges. Not interested in politics or process for its own sake.",
+      blindspots: "Can appear disengaged or uncommitted to teammates. May resist authority they haven't earned respect for. Struggles with long-term planning, ambiguous goals, and collaborative dependency. Can be blunt without realising the impact.",
+      cloudSEKfit: "Strong in engineering, security, or hands-on technical roles. Watch for low collaboration signals, resistance to accountability structures, or difficulty working in cross-functional teams."
+    },
+    ISFP: {
+      label: "Adventurer",
+      core: "Gentle, flexible, and quietly creative. Loyal, non-confrontational, and deeply attuned to their environment. Acts from personal values more than external rules.",
+      workplace: "Thrives with autonomy, creative latitude, and low interpersonal conflict. Dislikes pressure, criticism, and high-stakes confrontation. Often underestimates their own abilities.",
+      blindspots: "Assertiveness and pressure tolerance are the core risks. May avoid conflict well past the point of dysfunction. Can struggle to advocate for themselves or their work. Deadline pressure often causes quality drops. Sensitive to criticism even when they don't show it.",
+      cloudSEKfit: "Conditional fit. Good in creative, research, or support roles with low-conflict environments. High risk in sales, management, or high-pressure execution tracks."
+    },
+    ESTP: {
+      label: "Entrepreneur",
+      core: "Bold, observant, and thrives in high-action environments. Highly pragmatic — acts on data in front of them rather than theory. Excellent at improvising and reading rooms.",
+      workplace: "Performs best in fast-moving roles with tangible outputs and real-time feedback. Gets bored fast. Dislikes long planning cycles, abstract theory, and bureaucracy.",
+      blindspots: "Impulsivity is the dominant risk. May act before thinking through consequences. Short-term focused; can sacrifice long-term outcomes for immediate wins. Can be insensitive, rules-resistant, or manipulative in high-stakes situations.",
+      cloudSEKfit: "Strong in sales, BD, or fast-moving operational roles. Watch for impulsive decision patterns, rules resistance, or low accountability for outcomes they initiated."
+    },
+    ESFP: {
+      label: "Entertainer",
+      core: "Spontaneous, sociable, and highly attuned to people and the present moment. Brings energy and warmth. Excellent at making connections and keeping morale high.",
+      workplace: "Thrives in dynamic, social, people-facing roles. Needs variety and engagement. Does not do well with long-horizon planning, detailed analysis, or solitary work.",
+      blindspots: "Sustained focus and long-term execution are the core risks. Can struggle significantly with detailed work, process adherence, and accountability over time. May prioritise social harmony over difficult truths. Easily distracted.",
+      cloudSEKfit: "Fits well in community, events, marketing, or customer-facing roles. High risk in technical, analytical, or execution-heavy positions. Watch for avoidance of hard detail work and lack of follow-through."
+    }
+  };
+
+  const profile = TYPE_PROFILES[type];
+
+  const prompt = `You are a senior organisational psychologist and talent assessor. You have just completed a detailed analysis of a candidate's 60-question workplace personality assessment for a hiring team at CloudSEK — a fast-paced, high-accountability B2B cybersecurity company. The team moves fast, works with ambiguity, and needs people who can operate both independently and collaboratively under pressure.
+
+Your analysis will go directly to a hiring manager making a real decision. Be sharp, specific, and useful. Do NOT write generic personality-test summaries. Every observation must be traceable to the candidate's actual responses.
+
+═══════════════════════════════════════
+CANDIDATE: ${userName}
+ASSESSED TYPE: ${type} — ${TYPE_NAMES[type]||''}
+═══════════════════════════════════════
+
+TYPE REFERENCE (use this to contextualise responses — do not just copy it):
+Core traits: ${profile ? profile.core : ''}
+Workplace tendencies: ${profile ? profile.workplace : ''}
+Known blind spots: ${profile ? profile.blindspots : ''}
+CloudSEK fit context: ${profile ? profile.cloudSEKfit : ''}
+
+SCORE BREAKDOWN (intensity matters — use it):
+- E/I: ${scores.E} Extraversion vs ${scores.I} Introversion → ${Math.round(Math.max(scores.E,scores.I)/(scores.E+scores.I)*100)}% ${scores.E>=scores.I?'Extraversion':'Introversion'}${Math.round(Math.max(scores.E,scores.I)/(scores.E+scores.I)*100) < 60 ? ' [BORDERLINE — candidate is flexible across this dimension]' : Math.round(Math.max(scores.E,scores.I)/(scores.E+scores.I)*100) >= 75 ? ' [STRONG — this is a dominant preference]' : ''}
+- S/N: ${scores.S} Sensing vs ${scores.N} Intuition → ${Math.round(Math.max(scores.S,scores.N)/(scores.S+scores.N)*100)}% ${scores.S>=scores.N?'Sensing':'Intuition'}${Math.round(Math.max(scores.S,scores.N)/(scores.S+scores.N)*100) < 60 ? ' [BORDERLINE — candidate is flexible across this dimension]' : Math.round(Math.max(scores.S,scores.N)/(scores.S+scores.N)*100) >= 75 ? ' [STRONG — this is a dominant preference]' : ''}
+- T/F: ${scores.T} Thinking vs ${scores.F} Feeling → ${Math.round(Math.max(scores.T,scores.F)/(scores.T+scores.F)*100)}% ${scores.T>=scores.F?'Thinking':'Feeling'}${Math.round(Math.max(scores.T,scores.F)/(scores.T+scores.F)*100) < 60 ? ' [BORDERLINE — candidate is flexible across this dimension]' : Math.round(Math.max(scores.T,scores.F)/(scores.T+scores.F)*100) >= 75 ? ' [STRONG — this is a dominant preference]' : ''}
+- J/P: ${scores.J} Judging vs ${scores.P} Perceiving → ${Math.round(Math.max(scores.J,scores.P)/(scores.J+scores.P)*100)}% ${scores.J>=scores.P?'Structure':'Flexibility'}${Math.round(Math.max(scores.J,scores.P)/(scores.J+scores.P)*100) < 60 ? ' [BORDERLINE — candidate is flexible across this dimension]' : Math.round(Math.max(scores.J,scores.P)/(scores.J+scores.P)*100) >= 75 ? ' [STRONG — this is a dominant preference]' : ''}
+
+INTERPRETATION RULE: A candidate at 55% on a dimension is NOT the same as one at 85%. Borderline splits mean the candidate can flex. Strong splits mean it's a core operating preference. This MUST be reflected in your analysis. Two ${type}s with different intensities should read very differently.
+
+FULL RESPONSE LOG (all 60 answers):
+${answerSummary}
+
+═══════════════════════════════════════
+ANALYSIS INSTRUCTIONS
+═══════════════════════════════════════
+
+PROFILE SUMMARY: 3–4 sentences written for a hiring manager. Open with the candidate's defining characteristic as shown in their responses — not a type label. Reference score intensities where relevant. Be concrete.
+
+STRENGTHS (5 items): Specific to THIS candidate's response patterns. Not generic type traits. Each strength should be something a hiring manager can use in a role-fit decision. Format: "Strength label — one supporting sentence grounded in what you observed."
+
+GROWTH AREAS (4 items): Honest, useful, grounded in actual responses. Frame as development needs, not character flaws. Format: "Area — one sentence explaining what the responses revealed and why it matters."
+
+WORK STYLE: 2–3 sentences. What environment, team structure, and management approach will this person perform best in? What will cause them to disengage or underperform? Be specific to their responses, not their type.
+
+═══════════════════════════════════════
+RED FLAG ASSESSMENT — READ THIS CAREFULLY
+═══════════════════════════════════════
+
+You must evaluate the candidate across these 6 dimensions. For each, look at the relevant question responses in the log above and draw specific conclusions:
+
+1. CONFLICT & FEEDBACK RECEPTIVENESS
+   Examine: How did they respond to questions about disagreements, feedback, criticism, and delivering hard messages?
+   Risk pattern: Consistent conflict avoidance (e.g. always chose harmony/feelings over directness across TF questions), or dismissiveness toward others' input.
+   Why it matters at CloudSEK: The team operates with high candour. People who can't give or receive direct feedback become bottlenecks and create dysfunction.
+
+2. STRUCTURE vs CHAOS TOLERANCE
+   Examine: How did they respond to questions about deadlines, planning, flexibility, and last-minute changes?
+   Risk pattern (rigid): Extreme J scores (85%+) with multiple responses indicating discomfort with any ambiguity — may struggle in an evolving startup environment.
+   Risk pattern (chaotic): Extreme P scores with consistent avoidance of planning, structure, or follow-through signals — may miss deadlines or create coordination failures.
+   Why it matters: CloudSEK needs people who can operate in ambiguity without losing accountability.
+
+3. TEAM COLLABORATION FIT
+   Examine: Questions about group work, working independently vs. collaboratively, communication style.
+   Risk pattern: Pure isolationist (refuses collaborative work) OR pure consensus-seeker (can't make independent decisions). Both extremes are risks.
+   Why it matters: Most roles require genuine ability to work both independently and cross-functionally.
+
+4. EMOTIONAL REGULATION & PROFESSIONAL MATURITY
+   Examine: Questions about stress response, criticism, personal values in decision-making, approval-seeking.
+   Risk pattern: High sensitivity to criticism, decisions driven heavily by how others feel about them, stress responses that suggest reactive behaviour.
+   Why it matters: High-accountability environments with frequent feedback loops require emotional stability.
+
+5. PACE & AMBIGUITY FIT
+   Examine: Questions about variety, spontaneity, long-horizon planning, and responses to change.
+   Risk pattern: Strong preference for stability, routine, and predictability in a company that moves fast and changes direction.
+   Why it matters: Poor pace fit is one of the top reasons smart people fail in early-stage companies.
+
+6. RESPONSE CONSISTENCY & AUTHENTICITY
+   Examine: Are there contradictions between how they answered conceptually similar questions? (e.g., claiming to be decisive in one question, then expressing discomfort with rapid decisions in another)
+   Risk pattern: Inconsistent responses that suggest the candidate was projecting a desired image rather than answering authentically.
+   Why it matters: Inconsistency reduces the reliability of the whole assessment.
+
+RED FLAG RATING SCALE — apply exactly one of these three:
+- "No red flags": Across all 6 dimensions, no concerning patterns. Responses are balanced, consistent, and suggest someone who can navigate a professional, fast-paced environment well. State this explicitly and briefly explain why.
+- "Minor red flags": 1–2 dimensions showed concerning patterns, but they are not disqualifying on their own. These are things to probe in interview or watch during onboarding. Each flag should be named and explained with specific evidence from the responses.
+- "Major red flags": 2+ dimensions showed clear, consistent, concerning patterns — or 1 dimension showed extreme patterns that would make this candidate high-risk for most roles. These are genuine hiring risks that warrant careful discussion before proceeding.
+
+RED FLAGS ARRAY: If "No red flags" → empty array []. Otherwise, list each flag as a specific, evidence-based observation. Format: "Dimension name: [specific pattern observed across N questions], suggesting [what this means in a work context]. Probe in interview: [suggested question or area to explore]."
+
+RED FLAG SUMMARY: 2–4 sentences for the hiring manager. If no flags: explicitly confirm no concerning patterns and briefly explain what you saw that supports this. If flags exist: summarise what was found, why it matters at CloudSEK specifically, and what the hiring team should probe in the interview.
+
+═══════════════════════════════════════
+OUTPUT FORMAT
+═══════════════════════════════════════
+
+Return ONLY valid JSON. No markdown, no backticks, no commentary outside the JSON object.
+
+{
+  "type": "${type}",
+  "type_name": "${TYPE_NAMES[type]||'Professional'}",
+  "profile_summary": "3–4 sentences for hiring manager, specific to this candidate's response patterns and score intensities",
+  "strengths": [
+    "Strength label — supporting sentence grounded in observed responses",
+    "Strength label — supporting sentence grounded in observed responses",
+    "Strength label — supporting sentence grounded in observed responses",
+    "Strength label — supporting sentence grounded in observed responses",
+    "Strength label — supporting sentence grounded in observed responses"
+  ],
+  "growth_areas": [
+    "Area — sentence explaining what responses revealed and why it matters",
+    "Area — sentence explaining what responses revealed and why it matters",
+    "Area — sentence explaining what responses revealed and why it matters",
+    "Area — sentence explaining what responses revealed and why it matters"
+  ],
+  "work_style": "2–3 sentences on environment, team structure, and management approach that suits this specific candidate",
+  "red_flag_rating": "No red flags",
+  "red_flags": [],
+  "red_flag_summary": "2–4 sentences. If no flags: confirm and explain. If flags: summarise findings, CloudSEK relevance, and interview probes.",
+  "ei_label": "${scores.E>=scores.I?'Extraversion':'Introversion'}",
+  "sn_label": "${scores.S>=scores.N?'Sensing':'Intuition'}",
+  "tf_label": "${scores.T>=scores.F?'Thinking':'Feeling'}",
+  "jp_label": "${scores.J>=scores.P?'Structure':'Flexibility'}",
+  "ei_pct": ${Math.round(Math.max(scores.E,scores.I)/(scores.E+scores.I)*100)},
+  "sn_pct": ${Math.round(Math.max(scores.S,scores.N)/(scores.S+scores.N)*100)},
+  "tf_pct": ${Math.round(Math.max(scores.T,scores.F)/(scores.T+scores.F)*100)},
+  "jp_pct": ${Math.round(Math.max(scores.J,scores.P)/(scores.J+scores.P)*100)}
+}`;
+
+  try {
+    // Send via GET with URL params — avoids all CORS issues with Apps Script
+    const payload = {
+      action: "analyze",
+      name: userName,
+      email: userEmail,
+      prompt: prompt,
+      type: type,
+      type_name: TYPE_NAMES[type]||'Professional',
+      ei_label: scores.E>=scores.I?'Extraversion':'Introversion',
+      sn_label: scores.S>=scores.N?'Sensing':'Intuition',
+      tf_label: scores.T>=scores.F?'Thinking':'Feeling',
+      jp_label: scores.J>=scores.P?'Structure':'Flexibility',
+      ei_pct: Math.round(Math.max(scores.E,scores.I)/(scores.E+scores.I)*100),
+      sn_pct: Math.round(Math.max(scores.S,scores.N)/(scores.S+scores.N)*100),
+      tf_pct: Math.round(Math.max(scores.T,scores.F)/(scores.T+scores.F)*100),
+      jp_pct: Math.round(Math.max(scores.J,scores.P)/(scores.J+scores.P)*100)
+    };
+    const url = SHEETS_URL + "?" + Object.entries(payload).map(([k,v]) => k + "=" + encodeURIComponent(v)).join("&");
+    const res = await fetch(url, {method:"GET", mode:"no-cors"});
+    renderResults({name: userName});
+  } catch(e) {
+    console.error("[CloudSEK Assessment] Analysis failed, using fallback:", e.message);
+    const s = scores;
+    const fallback = {
+      type, type_name: TYPE_NAMES[type]||'Professional',
+      profile_summary:"Analysis unavailable — API call failed at submission time. Scores are accurate; personality summary could not be generated. Please re-run analysis manually if needed.",
+      strengths:["[Analysis unavailable]","[Analysis unavailable]","[Analysis unavailable]","[Analysis unavailable]","[Analysis unavailable]"],
+      growth_areas:["[Analysis unavailable]","[Analysis unavailable]","[Analysis unavailable]","[Analysis unavailable]"],
+      work_style:"[Analysis unavailable — API error at submission time]",
+      red_flag_rating: "Analysis unavailable",
+      red_flags: ["[API call failed — no red flag analysis was performed. Review responses manually.]"],
+      red_flag_summary: "Automated analysis was unavailable due to an API error at submission time. Scores have been recorded accurately. Red flag assessment requires manual review for this candidate.",
+      ei_label:s.E>=s.I?'Extraversion':'Introversion',
+      sn_label:s.S>=s.N?'Sensing':'Intuition',
+      tf_label:s.T>=s.F?'Thinking':'Feeling',
+      jp_label:s.J>=s.P?'Structure':'Flexibility',
+      ei_pct:Math.round(Math.max(s.E,s.I)/(s.E+s.I)*100),
+      sn_pct:Math.round(Math.max(s.S,s.N)/(s.S+s.N)*100),
+      tf_pct:Math.round(Math.max(s.T,s.F)/(s.T+s.F)*100),
+      jp_pct:Math.round(Math.max(s.J,s.P)/(s.J+s.P)*100),
+    };
+    renderResults(fallback);
+  }
+}
+
+
+function renderResults(r) {
+  const firstName = userName.split(' ')[0];
+  document.getElementById('res-firstname').textContent = firstName;
+  showScreen('screen-results');
+}
+
+
+function retake() {
+  clearTimer();
+  currentQ=0; answers={}; userName=''; userEmail='';
+  suspicionScore=0; timedOutCount=0; avgResponseMs=[];
+  questionStartTimes={};
+  document.getElementById('inp-name').value='';
+  document.getElementById('inp-email').value='';
+  showScreen('screen-intro');
+}
+</script>
+</body>
+</html>
