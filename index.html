@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudSEK · Candidate Assessment</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f1923 0%,#1a2d3d 50%,#0f1923 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#fff;border-radius:20px;padding:44px 48px;max-width:660px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+@media(max-width:520px){.card{padding:32px 24px}}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.brand-icon{width:36px;height:36px;background:#0f1923;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-icon svg{width:20px;height:20px}
+.brand-name{font-size:15px;font-weight:600;color:#0f1923;line-height:1.2}
+.brand-sub{font-size:12px;color:#888;margin-top:1px}
+.divider{height:1px;background:#f0f0ee;margin:0 0 28px}
+.intro-title{font-size:22px;font-weight:600;color:#111;margin-bottom:10px;letter-spacing:-0.3px}
+.subtitle{color:#666;font-size:15px;line-height:1.65;margin-bottom:28px}
+.field{margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:500;color:#444;margin-bottom:6px}
+input{width:100%;padding:11px 14px;border:1.5px solid #e0e0dd;border-radius:9px;font-size:15px;outline:none;transition:border .15s,box-shadow .15s;color:#111}
+input:focus{border-color:#0f1923;box-shadow:0 0 0 3px rgba(15,25,35,.08)}
+.btn{background:#0f1923;color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;width:100%;transition:background .15s}
+.btn:hover{background:#1e3448}
+.progress-wrap{margin-bottom:28px}
+.progress-top{display:flex;justify-content:space-between;margin-bottom:8px}
+.progress-label{font-size:12px;font-weight:500;color:#888;letter-spacing:.03em}
+.progress-pct{font-size:12px;font-weight:600;color:#0f1923}
+.progress-bar{background:#f0f0ee;border-radius:999px;height:5px;overflow:hidden}
+.progress-fill{background:linear-gradient(90deg,#2563eb,#0f1923);height:100%;border-radius:999px;transition:width .4s ease}
+.question{font-size:17px;font-weight:500;color:#111;line-height:1.6;margin-bottom:20px;letter-spacing:-0.2px}
+.options{display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+.opt{border:1.5px solid #e8e8e5;border-radius:11px;padding:13px 16px;cursor:pointer;font-size:14.5px;color:#333;transition:all .12s;text-align:left;background:#fff;line-height:1.45}
+.opt:hover{border-color:#2563eb;background:#f5f8ff;color:#1e3a8a}
+.opt.selected{border-color:#0f1923;background:#0f1923;color:#fff;font-weight:500}
+.nav{display:flex;justify-content:space-between;align-items:center}
+.btn-back{background:none;border:1.5px solid #e0e0dd;color:#666;padding:9px 18px;border-radius:9px;font-size:14px;cursor:pointer}
+.btn-back:hover{border-color:#aaa;color:#333}
+.btn-next{background:#0f1923;color:#fff;border:none;padding:9px 22px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer}
+.btn-next:hover{background:#1e3448}
+.btn-next:disabled{background:#ccc;cursor:default}
+.timer{font-size:13px;color:#888;display:flex;align-items:center;gap:7px}
+.timer-ring{width:30px;height:30px}
+.timer-ring circle{fill:none;stroke:#e8e8e5;stroke-width:2.5}
+.timer-ring .prog{stroke:#f59e0b;stroke-width:2.5;stroke-linecap:round;stroke-dasharray:82;stroke-dashoffset:0;transition:stroke-dashoffset .9s linear,stroke .5s}
+.timed-banner{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:9px 13px;font-size:13px;color:#92400e;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.loading-screen{text-align:center;padding:20px 0}
+.spinner{width:36px;height:36px;border:2.5px solid #e8e8e5;border-top-color:#0f1923;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen h2{font-size:19px;font-weight:600;color:#111;margin-bottom:8px}
+.loading-screen p{color:#777;font-size:14px}
+.results-screen{text-align:center;padding:20px 0}
+.check-icon{width:60px;height:60px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:26px}
+.results-screen h2{font-size:22px;font-weight:600;color:#111;margin-bottom:10px}
+.results-screen p{color:#555;font-size:15px;line-height:1.7}
+.flagged-screen{text-align:center;padding:20px 0}
+.flagged-icon{width:56px;height:56px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px}
+.flagged-screen h2{font-size:20px;font-weight:600;color:#111;margin-bottom:12px}
+.flagged-screen p{color:#555;font-size:15px;line-height:1.7}
+.hp{position:absolute;left:-9999px}
+.screen{display:none}
+.screen.active{display:block}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div id="screen-intro" class="screen active">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L3 6V10C3 13.87 6.13 17.49 10 18.5C13.87 17.49 17 13.87 17 10V6L10 2Z" fill="white" stroke="white" stroke-width="0.5"/>
+          <path d="M7 10L9 12L13 8" stroke="#0f1923" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">CloudSEK</div>
+        <div class="brand-sub">Candidate Assessment</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="intro-title">Workplace Preferences Assessment</div>
+    <p class="subtitle">This assessment is part of our screening process. It helps us understand how you naturally think, work, and make decisions — there are no right or wrong answers.<br><br>Please answer based on your honest first instinct. The assessment takes approximately 10 minutes.</p>
+    <div class="field">
+      <label for="inp-name">Full name</label>
+      <input type="text" id="inp-name" placeholder="e.g. Priya Sharma" autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="inp-email">Work email</label>
+      <input type="email" id="inp-email" placeholder="e.g. priya@yourcompany.com" autocomplete="email">
+    </div>
+    <input class="hp" type="text" id="hp-field" tabindex="-1" autocomplete="off">
+    <button class="btn" onclick="startTest()">Begin Assessment →</button>
+  </div>
+
+  <div id="screen-question" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span class="progress-label" id="progress-label">QUESTION 1 OF 60</span>
+        <span class="progress-pct" id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div id="timed-banner" class="timed-banner" style="display:none">⏱ Go with your gut — answer quickly.</div>
+    <div id="question-text" class="question"></div>
+    <div id="options-list" class="options"></div>
+    <div class="nav">
+      <button class="btn-back" id="btn-back" onclick="prevQ()" style="display:none">← Back</button>
+      <div class="timer" id="timer-display" style="display:none">
+        <svg class="timer-ring" viewBox="0 0 30 30">
+          <circle cx="15" cy="15" r="12"/>
+          <circle class="prog" id="timer-prog" cx="15" cy="15" r="12" transform="rotate(-90 15 15)"/>
+        </svg>
+        <span id="timer-count">18</span>s
+      </div>
+      <button class="btn-next" id="btn-next" onclick="nextQ()" style="display:none">Next →</button>
+    </div>
+  </div>
+
+  <div id="screen-loading" class="screen">
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <h2>Submitting your responses…</h2>
+      <p>Please keep this window open.</p>
+    </div>
+  </div>
+
+  <div id="screen-results" class="screen">
+    <div class="results-screen">
+      <div class="check-icon">✓</div>
+      <h2>Thank you, <span id="res-firstname"></span>.</h2>
+      <p>Your assessment is complete. Our team will review your responses as part of the screening process and be in touch about next steps.</p>
+    </div>
+  </div>
+
+  <div id="screen-flagged" class="screen">
+    <div class="flagged-screen">
+      <div class="flagged-icon">⏱</div>
+      <h2>Please take a moment</h2>
+      <p>This assessment is designed to capture your honest, considered responses — and our system noticed this attempt was completed unusually quickly.<br><br>This isn't a problem. Simply revisit the assessment when you have 10 uninterrupted minutes to give each question your full attention.<br><br>If you believe this is an error, please reach out to your recruiter and they'll be happy to help.</p>
+    </div>
+  </div>
+
+</div>
+<script>
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyDeuntllpSa8BIkfyb5gn0ClaKM915LchxPXxXYsOIPdsCWFm7HecCyoxwYAUmrAcn-w/exec";
+
+// QUESTIONS — Big Five framework, scenario-based
+// dim: C=Reliability, O=Curiosity, E=Energy Style, A=Pushback Ability, S=Resilience, F=Filler
+// v: 1=low score, 2-3=mid, 4-5=high score
+// Options are designed so each feels natural to the person it describes —
+// low scorers pick low-v options because they genuinely resonate, not because they're tricked
+const QUESTIONS = [
+  // RELIABILITY (C) — 12 questions
+  {dim:"C",q:"You're leading a project and realise on Thursday that Friday's deadline is no longer realistic. Your manager hasn't asked for an update. You:",opts:[
+    {t:"Raise it today with a revised plan and your proposed recovery path",v:5},
+    {t:"Send a brief heads-up Thursday evening and follow up in the morning",v:4},
+    {t:"Work through the night and deliver as much as possible before saying anything",v:2},
+    {t:"Wait until Friday — you may still pull it off",v:1}]},
+  {dim:"C",q:"How do you typically approach a new piece of work with a clear deadline?",opts:[
+    {t:"Break it into milestones immediately and track progress against them",v:5},
+    {t:"Set a rough plan and check in with yourself at the halfway point",v:4},
+    {t:"Dive in and course-correct as you go",v:2},
+    {t:"Start when the deadline feels close enough to focus properly",v:1}]},
+  {dim:"C",q:"You've submitted work and a colleague spots a visible error afterwards. You:",opts:[
+    {t:"Fix it immediately, inform anyone affected, and add a check to prevent recurrence",v:5},
+    {t:"Fix it and move on — one error doesn't define the work",v:3},
+    {t:"Fix it but feel it was the reviewer's job to catch it earlier",v:2},
+    {t:"Fix it quietly — drawing attention makes it worse",v:2}]},
+  {dim:"C",q:"A task lands on your plate with no clear owner and no one has asked you to take it. You:",opts:[
+    {t:"Pick it up and flag that you're handling it",v:4},
+    {t:"Raise it to find the right owner before deciding whether to take it",v:4},
+    {t:"Wait to see if someone else claims it",v:2},
+    {t:"Let it sit — taking on unassigned work creates confusion",v:1}]},
+  {dim:"C",rev:true,q:"Your manager asks how a project is going mid-week. You:",opts:[
+    {t:"Give a clear, accurate status including any risks you've spotted",v:5},
+    {t:"Share a confident update — you'll flag issues if they become real",v:3},
+    {t:"Give an optimistic update — things usually work out",v:2},
+    {t:"Keep it brief — you'd rather show than tell",v:2}]},
+  {dim:"C",q:"You're given a task with no clear instructions. Before starting, you:",opts:[
+    {t:"Clarify the requirements and success criteria so you know what done looks like",v:5},
+    {t:"Make reasonable assumptions, start, and validate early",v:4},
+    {t:"Proceed with your best read and ask questions as they come up",v:3},
+    {t:"Start immediately — figuring it out is part of the job",v:2}]},
+  {dim:"C",q:"You're working on a complex deliverable and realise your initial estimate was too optimistic. You're behind. You:",opts:[
+    {t:"Escalate early with a revised timeline and options to recover",v:5},
+    {t:"Flag it and ask for help before it becomes a bigger problem",v:4},
+    {t:"Push harder internally and reassess at the next checkpoint",v:3},
+    {t:"Quietly reduce scope to protect the timeline without saying anything",v:1}]},
+  {dim:"C",rev:true,q:"A process you follow meticulously turns out to have a shortcut everyone else uses. You:",opts:[
+    {t:"Test the shortcut carefully before adopting it",v:5},
+    {t:"Raise it as a potential improvement for the whole team",v:4},
+    {t:"Stick to your process — shortcuts introduce risk",v:2},
+    {t:"Use the shortcut without further thought — if everyone does it, it's fine",v:2}]},
+  {dim:"C",q:"When you take on a commitment, others can reliably expect:",opts:[
+    {t:"It will be done on time, as specified — I take commitments seriously",v:5},
+    {t:"It will usually be on time — I communicate early when it's not",v:4},
+    {t:"It will get done eventually — timelines are estimates",v:2},
+    {t:"It depends on how the other priorities land",v:1}]},
+  {dim:"C",q:"A teammate regularly submits work with errors that create rework for others. You:",opts:[
+    {t:"Raise it directly with them — it's affecting the team",v:5},
+    {t:"Build in a quality check at handover to catch issues early",v:4},
+    {t:"Mention it to your manager and let them handle it",v:3},
+    {t:"Absorb the extra work — raising it will create tension",v:1}]},
+  {dim:"C",q:"You discover an inefficiency in a process that isn't your responsibility to own. You:",opts:[
+    {t:"Document it and bring it to whoever owns the process",v:4},
+    {t:"Fix it if you can — inefficiency is everyone's problem",v:3},
+    {t:"Note it and move on — you have your own work to focus on",v:2},
+    {t:"Wait to see if it causes a visible problem first",v:1}]},
+  {dim:"C",rev:true,q:"You're about to hit a milestone when new information changes the scope significantly. You:",opts:[
+    {t:"Reassess the plan and update stakeholders before continuing",v:5},
+    {t:"Adjust quietly and keep moving — you'll update when you're done",v:2},
+    {t:"Raise it immediately — changed scope means changed expectations",v:5},
+    {t:"Deliver what you originally committed to and flag the gap afterwards",v:3}]},
+
+  // CURIOSITY (O) — 12 questions
+  {dim:"O",q:"Your team is asked to use a new tool that replaces one you've relied on for years. You:",opts:[
+    {t:"Dive in early — new tools often solve old frustrations",v:5},
+    {t:"Give it a genuine try and reserve judgment until you've used it",v:4},
+    {t:"Use it because you have to, but keep the old one where possible",v:2},
+    {t:"Push back — the existing tool works fine and switching has real costs",v:1}]},
+  {dim:"O",q:"You're handed a project with no clear precedent and minimal guidance. Your reaction is:",opts:[
+    {t:"Energised — blank slate problems are where your best thinking happens",v:5},
+    {t:"Curious and cautious — you'll figure it out as you go",v:4},
+    {t:"Uncertain — you'd rather have clearer expectations before starting",v:2},
+    {t:"Uncomfortable — you'd prefer a template or past example to build from",v:1}]},
+  {dim:"O",q:"You disagree with a widely-held approach your team uses. You:",opts:[
+    {t:"Question it directly and propose a better alternative",v:5},
+    {t:"Raise it once clearly, then respect the team's decision if they hold the line",v:4},
+    {t:"Go along with it — challenging the norm creates friction",v:2},
+    {t:"Follow the process — your job is execution, not redesign",v:1}]},
+  {dim:"O",rev:true,q:"Your team proposes scrapping an approach you've already invested significant time in for a better one. You:",opts:[
+    {t:"Genuinely consider it — sunk cost shouldn't drive decisions",v:5},
+    {t:"Give it real consideration but feel the pull of what you've already built",v:4},
+    {t:"Push back — you've come too far to switch now",v:2},
+    {t:"Defer to the team but don't really let go of the original approach",v:1}]},
+  {dim:"O",q:"You have 2 hours of unstructured time. You most naturally:",opts:[
+    {t:"Explore something you've been curious about but haven't had time for",v:5},
+    {t:"Dig into a problem you haven't fully cracked yet",v:4},
+    {t:"Clear your backlog — free time is best used on known tasks",v:2},
+    {t:"Use the time to rest and recover before the next push",v:1}]},
+  {dim:"O",q:"A colleague challenges an assumption that underpins a plan you've been working on. You:",opts:[
+    {t:"Take it seriously — if the assumption is wrong, the plan is wrong",v:5},
+    {t:"Examine the challenge carefully before deciding whether to adjust",v:4},
+    {t:"Defend the assumption — you've thought about this more than they have",v:2},
+    {t:"Acknowledge it but continue — you can't revisit every decision mid-execution",v:2}]},
+  {dim:"O",q:"How do you feel about roles where the scope and requirements evolve frequently?",opts:[
+    {t:"Energised — evolving scope keeps the work interesting",v:5},
+    {t:"Comfortable — you can adapt as long as changes are communicated",v:4},
+    {t:"Manageable — you prefer stability but can handle it",v:2},
+    {t:"Draining — you do your best work with clear and consistent expectations",v:1}]},
+  {dim:"O",rev:true,q:"A newer industry approach is getting a lot of attention. You haven't tried it yet. You:",opts:[
+    {t:"Set aside time to learn it — staying current matters",v:5},
+    {t:"Wait for it to prove itself before investing time in it",v:3},
+    {t:"Ignore it for now — hype usually outpaces actual usefulness",v:1},
+    {t:"Ask someone who has used it for an honest assessment before deciding",v:4}]},
+  {dim:"O",q:"You make a significant mistake on a project. After fixing it, you:",opts:[
+    {t:"Diagnose the root cause and actively change your approach",v:5},
+    {t:"Reflect on it briefly and move forward",v:3},
+    {t:"Accept it and move on — dwelling doesn't help",v:2},
+    {t:"Look for what circumstances contributed to it",v:2}]},
+  {dim:"O",q:"A junior colleague suggests an unconventional solution to a problem you've been stuck on. You:",opts:[
+    {t:"Engage with it seriously — good ideas can come from anywhere",v:5},
+    {t:"Explore it before forming a view",v:4},
+    {t:"Be polite but stick to the more proven approach",v:2},
+    {t:"Explain why it won't work — you have more context than they do",v:1}]},
+  {dim:"O",q:"You've been in a stable, well-defined role for 18 months. Things are predictable and you perform well. You:",opts:[
+    {t:"Start looking for ways to expand scope or tackle harder problems",v:5},
+    {t:"Enjoy the stability but actively seek learning opportunities within the role",v:4},
+    {t:"Appreciate the comfort — performing well in a known role has real value",v:2},
+    {t:"Feel settled — this is exactly what good looks like",v:1}]},
+  {dim:"O",rev:true,q:"Your organisation makes a significant strategic shift. Your team's direction changes considerably. You:",opts:[
+    {t:"Get curious about what the shift opens up",v:5},
+    {t:"Ask for clarity on what this means for your work before reacting",v:4},
+    {t:"Feel unsettled — you'd built momentum in the previous direction",v:2},
+    {t:"Find it difficult to commit fully until you understand the reasoning",v:1}]},
+
+  // ENERGY STYLE (E) — 10 questions
+  {dim:"E",q:"In a team meeting on a complex problem, you tend to:",opts:[
+    {t:"Speak early and help shape the direction of the discussion",v:5},
+    {t:"Listen first, then contribute once you have something concrete to add",v:3},
+    {t:"Listen mostly and contribute when directly asked",v:2},
+    {t:"Prefer to process and share your thoughts in writing after the meeting",v:1}]},
+  {dim:"E",q:"A new colleague joins the team. You:",opts:[
+    {t:"Reach out immediately and help them find their footing",v:5},
+    {t:"Say hello and give them time to settle in before engaging more",v:3},
+    {t:"Connect when work naturally brings you together",v:2},
+    {t:"Give them space — they'll reach out when they're ready",v:1}]},
+  {dim:"E",rev:true,q:"After a full day of back-to-back meetings and collaboration, you typically feel:",opts:[
+    {t:"Energised — human interaction is where you do your best thinking",v:1},
+    {t:"Fine — you can sustain it but it's not where you thrive",v:3},
+    {t:"Ready for quiet time — you need space to recover",v:4},
+    {t:"Depleted — you need significant downtime to reset",v:5}]},
+  {dim:"E",q:"When you need to work through a difficult problem, you prefer to:",opts:[
+    {t:"Talk it through with others — the conversation itself generates the solution",v:5},
+    {t:"Think it through independently first, then validate with someone",v:3},
+    {t:"Work through it alone and share your conclusion when you're confident",v:1},
+    {t:"Write it out — articulating it clearly is how you think best",v:2}]},
+  {dim:"E",q:"You're asked to present to a large group with limited preparation time. You:",opts:[
+    {t:"Welcome it — high-visibility moments are opportunities",v:5},
+    {t:"Prepare as best you can and deliver it well",v:4},
+    {t:"Accept but feel the pressure more than you'd like",v:2},
+    {t:"Push back on the timeline — you'd rather do it well than rush it",v:2}]},
+  {dim:"E",rev:true,q:"You're offered full-time remote working with no expectation to come in. You:",opts:[
+    {t:"Take it — you do your best work in an independent, focused environment",v:5},
+    {t:"Prefer a hybrid setup — some in-person time is important to how you work",v:3},
+    {t:"Decline — proximity to your team matters significantly to how you contribute",v:1},
+    {t:"Accept with intention to build in regular in-person touchpoints",v:3}]},
+  {dim:"E",q:"You have an opinion in a meeting but a senior person is dominating the discussion. You:",opts:[
+    {t:"Find a natural pause and make your point directly",v:5},
+    {t:"Wait for a direct invitation to share your view",v:2},
+    {t:"Send your perspective in a follow-up message after the meeting",v:2},
+    {t:"Ask a question that draws the group toward your perspective",v:4}]},
+  {dim:"E",q:"You're most effective when your work environment is:",opts:[
+    {t:"Collaborative and interactive — energy feeds the work",v:5},
+    {t:"Balanced between collaboration and independent deep work",v:3},
+    {t:"Mostly independent with occasional team touchpoints",v:2},
+    {t:"Quiet and focused with minimal interruptions",v:1}]},
+  {dim:"E",rev:true,q:"A colleague you don't know well wants to grab coffee and get to know each other. You:",opts:[
+    {t:"Accept enthusiastically — you enjoy building new relationships",v:1},
+    {t:"Accept and look forward to it",v:2},
+    {t:"Accept but prefer the conversation stays work-relevant",v:4},
+    {t:"Accept out of politeness but find purely social interactions draining",v:5}]},
+  {dim:"E",q:"When working through a long independent task, you typically:",opts:[
+    {t:"Break it up with short conversations or check-ins to stay energised",v:5},
+    {t:"Take breaks but keep them independent — you don't need social interaction to recharge",v:2},
+    {t:"Go deep for extended stretches — interruptions break your flow",v:1},
+    {t:"Find a rhythm of focused work and brief connection that keeps you sharp",v:3}]},
+
+  // PUSHBACK ABILITY (A) — 12 questions
+  {dim:"A",q:"Your manager makes a decision you think is clearly wrong. You:",opts:[
+    {t:"Raise your disagreement directly and clearly, then commit once the decision stands",v:5},
+    {t:"Express your concern once and respect the call",v:4},
+    {t:"Go along with it — they have more context and authority",v:2},
+    {t:"Say nothing — it's not your place to challenge a manager's decision",v:1}]},
+  {dim:"A",q:"You receive critical feedback on your work that you genuinely disagree with. You:",opts:[
+    {t:"Push back respectfully with your reasoning — accepting feedback you think is wrong doesn't help anyone",v:5},
+    {t:"Ask clarifying questions to understand their perspective before deciding how to respond",v:4},
+    {t:"Accept it — they likely know something you don't",v:2},
+    {t:"Acknowledge it outwardly but continue doing it your way",v:1}]},
+  {dim:"A",rev:true,q:"In a disagreement with a colleague, you typically:",opts:[
+    {t:"Make your case clearly and accept the outcome either way",v:5},
+    {t:"Push your position until it's properly resolved",v:3},
+    {t:"Look for a middle ground quickly — prolonged disagreement is unproductive",v:2},
+    {t:"Back down once the other person feels strongly — the relationship matters more",v:1}]},
+  {dim:"A",q:"Your team is converging on a decision in a meeting that you believe is wrong. No one else has raised it. You:",opts:[
+    {t:"Raise your concern clearly — you'd rather be uncomfortable than wrong",v:5},
+    {t:"Ask a question that surfaces the issue without directly opposing it",v:4},
+    {t:"Let it go in the meeting and raise it privately with your manager afterwards",v:3},
+    {t:"Go with the group — the collective view is probably right",v:1}]},
+  {dim:"A",q:"A stakeholder asks your team to take on work that's clearly outside your agreed scope. You:",opts:[
+    {t:"Name the scope issue directly and offer to reprioritise if they want to proceed",v:5},
+    {t:"Flag it to your manager before agreeing to anything",v:4},
+    {t:"Do it this time to preserve the relationship, but flag it",v:2},
+    {t:"Take it on — flexibility builds goodwill and it's not worth the friction",v:1}]},
+  {dim:"A",rev:true,q:"How often do you take on requests you later regret?",opts:[
+    {t:"Rarely — you manage your commitments carefully",v:5},
+    {t:"Occasionally — usually when you underestimate the load",v:4},
+    {t:"More often than you'd like — it's hard to say no to people you respect",v:2},
+    {t:"Often — you find it genuinely difficult to turn down requests",v:1}]},
+  {dim:"A",q:"A peer takes credit for work you contributed to significantly in front of leadership. You:",opts:[
+    {t:"Address it directly with them after the meeting",v:5},
+    {t:"Mention it to your manager so the record is accurate",v:4},
+    {t:"Focus on making your contributions more visible going forward",v:3},
+    {t:"Let it go — raising it will come across as territorial",v:1}]},
+  {dim:"A",q:"A colleague is struggling with a deadline and asks for help. You're already stretched. You:",opts:[
+    {t:"Offer a specific, bounded piece of help — enough to move them forward without derailing you",v:5},
+    {t:"Explain you're at capacity and help them think through other options",v:4},
+    {t:"Help anyway and catch up on your own work later",v:2},
+    {t:"Say yes even though you know it will set you back — saying no feels wrong",v:1}]},
+  {dim:"A",q:"Your manager sets a deadline you think is genuinely unrealistic. You:",opts:[
+    {t:"Say so directly — committing to something unrealistic doesn't serve anyone",v:5},
+    {t:"Raise your concern with specifics and let them make the call",v:4},
+    {t:"Accept it and work hard — maybe you can surprise yourself",v:2},
+    {t:"Accept it and manage the fallout when the deadline is missed",v:1}]},
+  {dim:"A",rev:true,q:"You're asked to give honest feedback on a colleague's work that has real gaps. They're sensitive to criticism. You:",opts:[
+    {t:"Give the honest feedback — withholding it doesn't actually protect them",v:5},
+    {t:"Give honest feedback, framed carefully to land constructively",v:5},
+    {t:"Focus primarily on the positives and raise the gaps gently",v:2},
+    {t:"Keep the feedback mostly positive — the relationship isn't worth the risk",v:1}]},
+  {dim:"A",q:"There's ongoing interpersonal tension in your team that's affecting dynamics. You:",opts:[
+    {t:"Address it directly with the people involved — unresolved tension has real costs",v:5},
+    {t:"Raise it with your manager so they can step in",v:3},
+    {t:"Give it time — most tension resolves on its own",v:2},
+    {t:"Stay out of it unless it directly affects your work",v:1}]},
+  {dim:"A",q:"Your honest view of disagreement and conflict in a team is:",opts:[
+    {t:"Necessary and healthy — it surfaces important things when handled well",v:5},
+    {t:"Useful sometimes — it depends on the issue and the relationship",v:4},
+    {t:"Uncomfortable but occasionally unavoidable",v:3},
+    {t:"Mostly destructive — teams work better when they stay aligned",v:1}]},
+
+  // RESILIENCE (S) — 12 questions
+  {dim:"S",q:"You're handed a high-stakes deadline with 3 days' notice. Your immediate response is:",opts:[
+    {t:"Get to work — pressure focuses you",v:5},
+    {t:"Feel a spike of stress, then settle into a plan",v:4},
+    {t:"Feel significant anxiety that takes time to manage before you can start",v:2},
+    {t:"Feel overwhelmed — 3 days isn't enough to do this properly",v:1}]},
+  {dim:"S",q:"You make a significant, visible mistake on an important deliverable. You:",opts:[
+    {t:"Address it calmly, own it clearly, and focus on what you can fix",v:5},
+    {t:"Feel embarrassed but recover quickly and redirect to fixing it",v:4},
+    {t:"Replay it mentally for longer than feels productive",v:2},
+    {t:"Find it hard to fully shake — it sits with you and affects your focus",v:1}]},
+  {dim:"S",q:"A project you championed and invested heavily in gets cancelled by leadership. You:",opts:[
+    {t:"Accept it and redirect your energy — resources follow priorities",v:5},
+    {t:"Feel disappointed but move on within a day or two",v:4},
+    {t:"Struggle to fully let go — you put real work into it",v:2},
+    {t:"Find it genuinely demoralising and take a while to recover",v:1}]},
+  {dim:"S",rev:true,q:"How would you describe how stress typically affects you?",opts:[
+    {t:"Minimally — I stay functional and focused under most pressure",v:4},
+    {t:"Noticeably at times — I'm aware of it but manage it",v:3},
+    {t:"More than I'd like — it affects my output in high-pressure periods",v:2},
+    {t:"Barely at all — pressure doesn't really get to me",v:1}]},
+  {dim:"S",q:"You receive pointed public criticism of your work from a senior leader. You:",opts:[
+    {t:"Engage with it directly and professionally in the moment",v:5},
+    {t:"Stay composed, process it, and respond thoughtfully afterwards",v:4},
+    {t:"Feel defensive but keep it professional",v:2},
+    {t:"Find public criticism genuinely difficult to handle in the moment",v:1}]},
+  {dim:"S",q:"Your role changes significantly with minimal warning. The new direction is unclear. You:",opts:[
+    {t:"Adapt quickly — change is a constant and you treat it as such",v:5},
+    {t:"Take time to adjust but get there once things start to clarify",v:4},
+    {t:"Feel unsettled for a while before finding your footing",v:2},
+    {t:"Find significant unexpected change genuinely hard to absorb",v:1}]},
+  {dim:"S",rev:true,q:"How often do you find yourself thinking about work problems outside working hours?",opts:[
+    {t:"Rarely — you switch off and work stays at work",v:5},
+    {t:"Occasionally, when something significant is unresolved",v:4},
+    {t:"Often — it's hard to fully switch off",v:2},
+    {t:"Almost always — work stays with you mentally",v:1}]},
+  {dim:"S",q:"You're in a high-pressure situation and everyone around you is visibly stressed. You:",opts:[
+    {t:"Stay calm — your composure is often what the group needs",v:5},
+    {t:"Feel the pressure but manage it well enough",v:4},
+    {t:"Find the collective stress hard to ignore and absorb some of it",v:2},
+    {t:"Feel your own anxiety rise in response to others'",v:1}]},
+  {dim:"S",q:"Three things go wrong in the same week — a missed deadline, team friction, and a client complaint. You:",opts:[
+    {t:"Triage calmly and work through each one methodically",v:5},
+    {t:"Feel the weight of it but stay functional and work through them",v:4},
+    {t:"Find the accumulation genuinely draining and need recovery time",v:2},
+    {t:"Struggle to maintain your usual standard when everything compounds at once",v:1}]},
+  {dim:"S",rev:true,q:"Work-related anxiety is something you:",opts:[
+    {t:"Rarely experience — you have a high tolerance for pressure",v:5},
+    {t:"Experience occasionally and actively manage",v:4},
+    {t:"Experience fairly often — it's a real part of how you work",v:2},
+    {t:"Barely experience — work stress just doesn't register strongly",v:1}]},
+  {dim:"S",q:"Uncertainty about your team's direction has persisted for over a month with no resolution. You:",opts:[
+    {t:"Operate effectively on your best read of the situation and adjust as things clarify",v:5},
+    {t:"Find a way to stay productive but raise the need for clarity through the right channels",v:4},
+    {t:"Find sustained uncertainty progressively harder to stay motivated through",v:2},
+    {t:"Wait for clarity before committing fully — acting without a clear direction feels wrong",v:1}]},
+  {dim:"S",q:"You've worked hard on something and the outcome falls short of what you intended. You:",opts:[
+    {t:"Take what you can learn from it, own the outcome, and move forward",v:5},
+    {t:"Share it with context — you can acknowledge the gap without dwelling",v:4},
+    {t:"Hold it back and improve it before sharing — you'd rather delay than disappoint",v:2},
+    {t:"Find it difficult to move on — you hold your work to a high standard",v:2}]},
+
+  // FILLERS (5 questions — don't score, obscure pattern)
+  {dim:"F",q:"You find out a close colleague has been inadvertently sharing information that should stay internal. You:",opts:[
+    {t:"Talk to them directly before escalating",v:0},
+    {t:"Raise it with your manager immediately",v:0},
+    {t:"Document what you know first, then decide",v:0},
+    {t:"Give them the chance to correct it themselves",v:0}]},
+  {dim:"F",q:"You're offered a significant opportunity that requires stepping back from a commitment to your current team. You:",opts:[
+    {t:"Take it — growth opportunities don't always wait",v:0},
+    {t:"Honour the commitment first, then pursue it",v:0},
+    {t:"Have an honest conversation with the team before deciding",v:0},
+    {t:"Decline — your word to the team is more important",v:0}]},
+  {dim:"F",q:"You've found a shortcut that saves you time, but it bypasses a process others on the team follow. You:",opts:[
+    {t:"Share it with the team so everyone benefits",v:0},
+    {t:"Raise it as a potential process improvement",v:0},
+    {t:"Use it yourself and see if it holds up first",v:0},
+    {t:"Check whether bypassing the process has downstream effects",v:0}]},
+  {dim:"F",q:"Your team celebrates a significant win publicly. You know the result was partly due to fortunate timing. You:",opts:[
+    {t:"Celebrate with the team — outcomes are what matter",v:0},
+    {t:"Privately note what was skill versus luck for your own learning",v:0},
+    {t:"Raise it internally so the team draws the right lessons",v:0},
+    {t:"Enjoy it — over-analysing good outcomes is counterproductive",v:0}]},
+  {dim:"F",q:"You're asked for your honest assessment of a colleague's readiness for a promotion. You have reservations. You:",opts:[
+    {t:"Share your honest view — that's what being asked means",v:0},
+    {t:"Give a balanced view with specific examples for both sides",v:0},
+    {t:"Speak to the colleague first before sharing your view",v:0},
+    {t:"Focus on the positives and frame concerns as areas to grow",v:0}]},
+
+  // TIMED SPOT CHECKS (4 — 18s each)
+  {dim:"A",timed:true,q:"Your team is about to ship something you believe has a real quality issue. The deadline is tomorrow. You:",opts:[
+    {t:"Raise it clearly and insist it be addressed before shipping",v:5},
+    {t:"Raise it but defer to the team's judgment",v:3},
+    {t:"Ship it — deadlines exist for good reasons",v:1},
+    {t:"Say nothing — you might be reading it wrong",v:1}]},
+  {dim:"C",timed:true,q:"It's Wednesday and you know you won't make Friday's deadline. You:",opts:[
+    {t:"Tell your manager now with a revised plan",v:5},
+    {t:"Work through the night to close the gap before saying anything",v:2},
+    {t:"Tell your manager Thursday morning",v:3},
+    {t:"Wait until Thursday to reassess — you might recover",v:1}]},
+  {dim:"S",timed:true,q:"A senior stakeholder sends a harsh email criticising your work, copied to your manager. You:",opts:[
+    {t:"Respond calmly and professionally, acknowledging what's valid",v:5},
+    {t:"Take 24 hours and respond thoughtfully once you've processed it",v:4},
+    {t:"Loop in your manager before responding",v:3},
+    {t:"Feel shaken but respond professionally",v:2}]},
+  {dim:"O",timed:true,q:"A key competitor just launched something that directly challenges your team's roadmap. Leadership wants your take tomorrow. You:",opts:[
+    {t:"Do a rapid but rigorous analysis and come with a clear recommendation",v:5},
+    {t:"Bring multiple options and let leadership decide the response",v:4},
+    {t:"Propose a short pause to properly assess before recommending anything",v:3},
+    {t:"Stay the course — reacting to competitors usually ends badly",v:1}]}
+];
+
+const buildOrder = () => {
+  const byDim={C:[],O:[],E:[],A:[],S:[],F:[],TC:[],TO:[],TE:[],TA:[],TS:[]};
+  QUESTIONS.forEach((q,i)=>{
+    if(q.timed) byDim['T'+q.dim].push(i);
+    else if(q.dim==='F') byDim.F.push(i);
+    else byDim[q.dim].push(i);
+  });
+  const fillerSlots=new Set([10,21,32,43,54]);
+  const order=[];
+  const pools=[byDim.C,byDim.O,byDim.E,byDim.A,byDim.S];
+  let pi=0;
+  while(order.length<55){
+    if(fillerSlots.has(order.length)&&byDim.F.length){order.push(byDim.F.shift());continue;}
+    for(let attempt=0;attempt<5;attempt++){
+      const pool=pools[(pi+attempt)%5];
+      if(pool.length){order.push(pool.shift());pi=(pi+attempt+1)%5;break;}
+    }
+    if(order.length<55&&!pools.some(p=>p.length)&&!byDim.F.length)break;
+    // safety — avoid infinite loop if pools exhausted
+    if(pools.every(p=>p.length===0)&&byDim.F.length===0)break;
+    pi++;
+  }
+  const timed=[byDim.TA[0],byDim.TC[0],byDim.TS[0],byDim.TO[0]];
+  const final=[];
+  for(let i=0;i<order.length;i++){
+    if(i===14&&timed[0]!==undefined)final.push(timed[0]);
+    if(i===29&&timed[1]!==undefined)final.push(timed[1]);
+    if(i===44&&timed[2]!==undefined)final.push(timed[2]);
+    final.push(order[i]);
+  }
+  if(timed[3]!==undefined)final.push(timed[3]);
+  return final;
+};
+
+const Q_ORDER=buildOrder();
+const TOTAL=Q_ORDER.length;
+const sessionSeed=Math.floor(Math.random()*997);
+let currentShuffleMap=[];
+let currentQ=0,answers={},userName='',userEmail='';
+let timerInterval=null,timerLeft=18;
+let questionStartTimes={},responseTimes=[],suspicionScore=0,timedOutCount=0;
+let visitedQ=new Set();
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function startTest(){
+  const name=document.getElementById('inp-name').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  if(document.getElementById('hp-field').value)suspicionScore+=10;
+  if(!name||!email){alert('Please enter your name and email.');return;}
+  if(!email.includes('@')){alert('Please enter a valid email address.');return;}
+  userName=name;userEmail=email;
+  currentQ=0;answers={};suspicionScore=0;timedOutCount=0;responseTimes=[];visitedQ=new Set();
+  renderQuestion();showScreen('screen-question');
+}
+
+function clearTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null;}}
+
+function startTimer(){
+  clearTimer();timerLeft=18;updateTimerDisplay();
+  timerInterval=setInterval(()=>{
+    timerLeft--;updateTimerDisplay();
+    if(timerLeft<=0){clearTimer();timedOutCount++;answers[currentQ]='__timeout__';nextQ(true);}
+  },1000);
+}
+
+function updateTimerDisplay(){
+  document.getElementById('timer-count').textContent=timerLeft;
+  const offset=82*(1-timerLeft/18);
+  const prog=document.getElementById('timer-prog');
+  prog.style.strokeDashoffset=offset;
+  prog.style.stroke=timerLeft>8?'#f59e0b':timerLeft>4?'#ef4444':'#dc2626';
+}
+
+function renderQuestion(){
+  clearTimer();
+  const qi=Q_ORDER[currentQ];
+  const q=QUESTIONS[qi];
+  const pct=Math.round(currentQ/TOTAL*100);
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-label').textContent='QUESTION '+(currentQ+1)+' OF '+TOTAL;
+  document.getElementById('progress-pct').textContent=pct+'%';
+  document.getElementById('question-text').textContent=q.q;
+  const isTimed=!!q.timed;
+  document.getElementById('timed-banner').style.display=isTimed?'flex':'none';
+  document.getElementById('timer-display').style.display=isTimed?'flex':'none';
+  // Shuffle options — seeded per question so Back gives same order
+  const indices=q.opts.map((_,i)=>i);
+  const seed=(qi*31+sessionSeed)%997;
+  for(let i=indices.length-1;i>0;i--){
+    const j=(seed*(i+7))%(i+1);
+    [indices[i],indices[j]]=[indices[j],indices[i]];
+  }
+  currentShuffleMap=[...indices];
+  const opts=document.getElementById('options-list');
+  opts.innerHTML='';
+  indices.forEach((origIdx,dispPos)=>{
+    const btn=document.createElement('button');
+    btn.className='opt'+(answers[currentQ]===origIdx?' selected':'');
+    btn.textContent=q.opts[origIdx].t;
+    btn.onclick=()=>selectOpt(origIdx);
+    opts.appendChild(btn);
+  });
+  document.getElementById('btn-back').style.display=currentQ===0?'none':'block';
+  const isRevisit=visitedQ.has(currentQ)&&answers[currentQ]!==undefined&&answers[currentQ]!=='__timeout__';
+  const btnNext=document.getElementById('btn-next');
+  btnNext.style.display=isRevisit?'block':'none';
+  btnNext.disabled=answers[currentQ]===undefined;
+  visitedQ.add(currentQ);
+  questionStartTimes[currentQ]=Date.now();
+  if(isTimed)startTimer();
+}
+
+function selectOpt(origIdx){
+  const elapsed=Date.now()-(questionStartTimes[currentQ]||Date.now());
+  if(answers[currentQ]===undefined&&!QUESTIONS[Q_ORDER[currentQ]].timed)responseTimes.push(elapsed);
+  answers[currentQ]=origIdx;
+  document.querySelectorAll('.opt').forEach((b,pos)=>{
+    b.classList.toggle('selected',currentShuffleMap[pos]===origIdx);
+  });
+  document.getElementById('btn-next').disabled=false;
+  clearTimer();
+  setTimeout(()=>{if(answers[currentQ]!==undefined)nextQ();},380);
+}
+
+function nextQ(fromTimeout=false){
+  if(!fromTimeout&&answers[currentQ]===undefined)return;
+  clearTimer();
+  if(currentQ<TOTAL-1){currentQ++;renderQuestion();}
+  else submitTest();
+}
+
+function prevQ(){
+  if(currentQ>0){clearTimer();currentQ--;renderQuestion();}
+}
+
+function calcScores(){
+  const raw={C:0,O:0,E:0,A:0,S:0};
+  const cnt={C:0,O:0,E:0,A:0,S:0};
+  for(let qi=0;qi<TOTAL;qi++){
+    const idx=Q_ORDER[qi];
+    const q=QUESTIONS[idx];
+    if(q.dim==='F')continue;
+    const ans=answers[qi];
+    if(ans===undefined||ans==='__timeout__')continue;
+    const opt=q.opts[ans];
+    if(!opt||opt.v===0)continue;
+    const w=q.timed?0.5:1;
+    raw[q.dim]+=opt.v*w;
+    cnt[q.dim]+=5*w;
+  }
+  const pct={};
+  ['C','O','E','A','S'].forEach(d=>{
+    pct[d]=cnt[d]>0?Math.round((raw[d]/cnt[d])*100):50;
+  });
+  return pct;
+}
+
+function checkSuspicion(){
+  if(responseTimes.length>=15){
+    const sorted=[...responseTimes].sort((a,b)=>a-b);
+    const median=sorted[Math.floor(sorted.length/2)];
+    if(median<1200)suspicionScore+=3;
+    const avg=responseTimes.reduce((a,b)=>a+b,0)/responseTimes.length;
+    if(avg<1500)suspicionScore+=2;
+  }
+  if(timedOutCount>=2)suspicionScore+=2;
+  const optCounts={};let scored=0;
+  for(let qi=0;qi<TOTAL;qi++){
+    const a=answers[qi];
+    if(a===undefined||a==='__timeout__')continue;
+    scored++;optCounts[a]=(optCounts[a]||0)+1;
+  }
+  if(scored>10){
+    const maxSame=Math.max(...Object.values(optCounts));
+    if(maxSame/scored>0.75)suspicionScore+=3;
+  }
+}
+
+function buildAnswerSummary(){
+  return Q_ORDER.map((qi,pos)=>{
+    const q=QUESTIONS[qi];
+    if(q.dim==='F')return null;
+    const a=answers[pos];
+    if(a===undefined||a==='__timeout__')return'Q'+(pos+1)+'['+q.dim+']: No answer';
+    return'Q'+(pos+1)+'['+q.dim+(q.timed?'/T':'')+(q.rev?'/R':'')+']:'+q.opts[a].t;
+  }).filter(Boolean).join('\n');
+}
+
+async function submitTest(){
+  clearTimer();
+  const unanswered=[];
+  for(let qi=0;qi<TOTAL;qi++){
+    if(answers[qi]===undefined&&!QUESTIONS[Q_ORDER[qi]].timed)unanswered.push(qi);
+  }
+  if(unanswered.length>3){currentQ=unanswered[0];renderQuestion();return;}
+  checkSuspicion();
+  if(suspicionScore>=8){showScreen('screen-flagged');return;}
+  showScreen('screen-loading');
+  const scores=calcScores();
+  // Send as flat fields — most reliable way through no-cors
+  const payload=JSON.stringify({
+    action:'analyze',
+    name:userName, email:userEmail,
+    scoreC:scores.C, scoreO:scores.O, scoreE:scores.E, scoreA:scores.A, scoreS:scores.S,
+    answers:buildAnswerSummary(),
+    suspicion:suspicionScore, timed_out:timedOutCount
+  });
+  fetch(SHEETS_URL,{method:'POST',mode:'no-cors',body:payload}).catch(e=>console.error('Submit error:',e));
+  renderResults();
+}
+
+function renderResults(){
+  document.getElementById('res-firstname').textContent=userName.split(' ')[0];
+  showScreen('screen-results');
+}
+</script>
+</body>
+</html>
